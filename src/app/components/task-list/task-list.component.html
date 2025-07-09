@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="task-list-container">
+      <!-- Header Section -->
+      <header class="header">
+        <div class="header-content">
+          <h1 class="header-title">
+            <mat-icon class="header-icon">task_alt</mat-icon>
+            Task Manager
+          </h1>
+          <button mat-fab color="primary" class="add-task-fab" (click)="openTaskForm()">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      </header>
+
+      <!-- Filters Section -->
+      <section class="filters-section">
+        <div class="filters-container">
+          <form [formGroup]="filterForm" class="filters-form">
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Priority</mat-label>
+              <mat-select formControlName="priority">
+                <mat-option value="">All Priorities</mat-option>
+                <mat-option [value]="Priority.LOW">Low</mat-option>
+                <mat-option [value]="Priority.MEDIUM">Medium</mat-option>
+                <mat-option [value]="Priority.HIGH">High</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Status</mat-label>
+              <mat-select formControlName="status">
+                <mat-option value="">All Statuses</mat-option>
+                <mat-option [value]="Status.PENDING">Pending</mat-option>
+                <mat-option [value]="Status.IN_PROGRESS">In Progress</mat-option>
+                <mat-option [value]="Status.COMPLETED">Completed</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </form>
+        </div>
+      </section>
+
+      <!-- Tasks Grid -->
+      <section class="tasks-section">
+        <div class="task-grid">
+          <mat-card *ngFor="let task of filteredTasks$ | async; trackBy: trackByTaskId" 
+                    class="task-card" 
+                    [class.completed]="task.status === Status.COMPLETED">
+            <mat-card-header class="task-header">
+              <div class="task-title-section">
+                <mat-card-title class="task-title">{{ task.title }}</mat-card-title>
+                <mat-card-subtitle class="task-due-date">
+                  <mat-icon class="date-icon">schedule</mat-icon>
+                  {{ task.dueDate | date:'MMM d, y' }}
+                </mat-card-subtitle>
+              </div>
+              <div class="task-actions">
+                <button mat-icon-button class="edit-btn" (click)="editTask(task)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button class="delete-btn" (click)="deleteTask(task.id)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </mat-card-header>
+            
+            <mat-card-content class="task-content">
+              <p class="task-description">{{ task.description }}</p>
+              <div class="task-badges">
+                <mat-chip class="priority-chip" [class]="'priority-' + task.priority">
+                  <mat-icon class="chip-icon">{{ getPriorityIcon(task.priority) }}</mat-icon>
+                  {{ getPriorityLabel(task.priority) }}
+                </mat-chip>
+                <mat-chip class="status-chip" [class]="'status-' + task.status">
+                  <mat-icon class="chip-icon">{{ getStatusIcon(task.status) }}</mat-icon>
+                  {{ getStatusLabel(task.status) }}
+                </mat-chip>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="(filteredTasks$ | async)?.length === 0" class="empty-state">
+          <div class="empty-state-content">
+            <mat-icon class="empty-icon">assignment_turned_in</mat-icon>
+            <h2 class="empty-title">No tasks found</h2>
+            <p class="empty-description">Create your first task to get started on your productivity journey!</p>
+            <button mat-raised-button color="primary" (click)="openTaskForm()">
+              <mat-icon>add</mat-icon>
+              Create Task
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <app-task-form 
+      [isOpen]="isFormOpen"
+      [task]="selectedTask"
+      (close)="closeTaskForm()"
+      (save)="onTaskSaved($event)">
+    </app-task-form>
+</body>
+</html>
